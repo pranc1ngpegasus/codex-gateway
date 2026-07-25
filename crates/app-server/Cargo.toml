@@ -1,0 +1,17 @@
+[package]
+description.workspace = true
+edition.workspace = true
+license.workspace = true
+name = "codex-gateway-app-server"
+repository.workspace = true
+version.workspace = true
+
+[dependencies]
+codex-gateway-config = { path = "../config" }
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,8 @@
+allow-expect-in-tests = false
+allow-panic-in-tests = true
+allow-unwrap-in-tests = true
+await-holding-invalid-types = [
+  "tokio::sync::MutexGuard",
+  "tokio::sync::RwLockReadGuard",
+  "tokio::sync::RwLockWriteGuard",
+]

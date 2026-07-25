@@ -1,0 +1,66 @@
+[package]
+description.workspace = true
+edition.workspace = true
+license.workspace = true
+name = "codex-gateway"
+repository.workspace = true
+version.workspace = true
+
+[[bin]]
+name = "codex-gateway"
+path = "src/main.rs"
+
+[workspace]
+members = [
+  "crates/api",
+  "crates/app-server",
+  "crates/config",
+  "crates/translate",
+]
+resolver = "3"
+
+[workspace.package]
+description = "Bridge Codex app-server to OpenAI-compatible Chat Completions and Responses APIs"
+edition = "2024"
+license = "Apache-2.0"
+repository = "https://github.com/mokmok-dev/codex-gateway"
+version = "0.0.0"
+
+[workspace.dependencies]
+axum = { version = "0.8.9", features = ["json"] }
+clap = { version = "4.6.4", features = ["derive", "env"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+thiserror = "2.0.19"
+tokio = { version = "1.53.1", features = ["full"] }
+tokio-stream = "0.1.19"
+tower-http = { version = "0.6.11", features = ["trace"] }
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+uuid = { version = "1.24.0", features = ["v4"] }
+
+[dependencies]
+axum.workspace = true
+clap.workspace = true
+codex-gateway-api = { path = "crates/api" }
+codex-gateway-app-server = { path = "crates/app-server" }
+codex-gateway-config = { path = "crates/config" }
+thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+[lints]
+workspace = true
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -2 }
+expect_used = "deny"
+panic = "warn"
+pedantic = { level = "warn", priority = -1 }
+todo = "warn"
+unwrap_used = "warn"
+
+[workspace.lints.rust]
+unexpected_cfgs = "warn"
+unsafe_code = "deny"
