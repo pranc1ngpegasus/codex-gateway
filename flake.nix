@@ -110,6 +110,7 @@
           };
 
           packages = {
+            codex-gateway = package;
             default = package;
           };
         };

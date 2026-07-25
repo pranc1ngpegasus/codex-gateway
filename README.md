@@ -61,6 +61,30 @@ nix build
 ./result/bin/codex-gateway --help
 ```
 
+Use the package from another Flake:
+
+```nix
+{
+  inputs.codex-gateway.url = "github:pranc1ngpegasus/codex-gateway";
+
+  outputs =
+    { codex-gateway, nixpkgs, ... }:
+    let
+      system = "aarch64-darwin";
+      pkgs = nixpkgs.legacyPackages.${system};
+    in
+    {
+      devShells.${system}.default = pkgs.mkShell {
+        packages = [
+          codex-gateway.packages.${system}.codex-gateway
+        ];
+      };
+    };
+}
+```
+
+`packages.<system>.default` is also available.
+
 The Flake uses `nixpkgs-unstable`, `flake-parts`, `rust-overlay`, and `treefmt-nix`. The development shell and package build share the toolchain declared in `rust-toolchain.toml`.
 
 `nix fmt` runs treefmt with nixfmt, rustfmt, and taplo. The development shell also configures sccache as `RUSTC_WRAPPER` to cache Rust recompilation.
@@ -76,6 +100,20 @@ Install directly from this repository:
 ```bash
 cargo install --path .
 ```
+
+## Release
+
+Update `workspace.package.version` in `Cargo.toml` and merge the change into `main`.
+Then create and push an annotated tag with the same version:
+
+```bash
+git tag -a v0.1.0 -m v0.1.0
+git push origin v0.1.0
+```
+
+The release workflow verifies that the tag matches the Cargo version, builds all
+supported systems, and publishes the archives to a GitHub Release. A manual
+workflow run builds the artifacts without publishing a release.
 
 ## Run
 

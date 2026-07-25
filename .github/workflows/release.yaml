@@ -1,0 +1,65 @@
+name: release
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-release
+  cancel-in-progress: false
+permissions:
+  contents: read
+jobs:
+  build:
+    name: build (${{ matrix.system }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - system: x86_64-linux
+            runner: ubuntu-24.04
+          - system: aarch64-linux
+            runner: ubuntu-24.04-arm
+          - system: aarch64-darwin
+            runner: macos-26
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-nix
+      - run: |
+          package_version="$(nix eval --raw ".#packages.${{ matrix.system }}.codex-gateway.version")"
+          if [[ "$RELEASE_TAG" != "v$package_version" ]]; then
+            echo "::error::Tag $RELEASE_TAG does not match Cargo version $package_version"
+            exit 1
+          fi
+        if: github.ref_type == 'tag'
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+      - run: test "$(nix eval --impure --raw --expr builtins.currentSystem)" = "${{ matrix.system }}"
+      - run: nix build ".#packages.${{ matrix.system }}.default" --print-build-logs
+      - run: |
+          mkdir -p dist/package
+          cp -L result/bin/codex-gateway dist/package/codex-gateway
+          tar -C dist/package -czf "dist/codex-gateway-${{ matrix.system }}.tar.gz" codex-gateway
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: codex-gateway-${{ matrix.system }}
+          path: dist/codex-gateway-${{ matrix.system }}.tar.gz
+          if-no-files-found: error
+  publish:
+    name: publish GitHub Release
+    if: github.ref_type == 'tag'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          pattern: codex-gateway-*
+          path: dist
+          merge-multiple: true
+      - run: gh release create "$RELEASE_TAG" dist/*.tar.gz --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes --title "$RELEASE_TAG"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
