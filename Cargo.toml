@@ -24,7 +24,7 @@ description = "Bridge Codex app-server to OpenAI-compatible Chat Completions and
 edition = "2024"
 license = "Apache-2.0"
 repository = "https://github.com/pranc1ngpegasus/codex-gateway"
-version = "0.0.0"
+version = "0.0.1"
 
 [workspace.dependencies]
 axum = { version = "0.8.9", features = ["json"] }
